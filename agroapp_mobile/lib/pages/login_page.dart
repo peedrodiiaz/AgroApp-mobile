@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
-  // Color principal de AgroApp Web (#29D44A)
-  final Color agroColor = const Color(0xFF29D44A);
+  static const Color agroColor = Color.fromARGB(255, 46, 95, 56);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5), // Un gris muy clarito de fondo
+      backgroundColor: const Color(0xFFF5F5F5), 
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(30.0),
@@ -23,37 +18,39 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               const SizedBox(height: 50),
               
-              // --- SECCIÓN LOGO ---
               Container(
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
                   color: Colors.white,
+                  border: Border.all(color: Colors.black, width: 0),
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: agroColor.withOpacity(0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+                      blurRadius: 25,
+                      offset: const Offset(0, 15),
                     ),
                   ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(15.0),
-                  // Nota: Asegúrate de tener la imagen en tus assets
-                  child: Icon(Icons.eco, size: 60, color: agroColor), 
-                ),
+                  
+                  child: SvgPicture.asset(
+                    "assets/images/LogoAPP.svg",
+                    width: 80,
+                    height: 80,
+                    colorFilter: ColorFilter.mode(Colors.green, BlendMode.srcIn),
+                    
+                  ),
+                
               ),
               
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
               
-              // --- TÍTULOS ---
               const Text(
                 'AgroApp',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black,
+                  color: Color.fromARGB(255, 46, 95, 56),
                 ),
               ),
               const Text(
@@ -66,12 +63,11 @@ class _LoginPageState extends State<LoginPage> {
               
               const SizedBox(height: 50),
               
-              // --- CAMPO: USUARIO ---
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   ' Usuario',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color.fromARGB(255, 46, 95, 56),),
                 ),
               ),
               const SizedBox(height: 8),
@@ -79,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color:  Color.fromARGB(255, 75, 75, 75)),
                 ),
                 child: const TextField(
                   decoration: InputDecoration(
@@ -92,12 +88,11 @@ class _LoginPageState extends State<LoginPage> {
               
               const SizedBox(height: 25),
               
-              // --- CAMPO: CONTRASEÑA ---
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   ' Contraseña',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color.fromARGB(255, 46, 95, 56),),
                 ),
               ),
               const SizedBox(height: 8),
@@ -105,10 +100,10 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color:  Color.fromARGB(255, 75, 75, 75)),
                 ),
                 child: const TextField(
-                  obscureText: true, // Para ocultar los puntitos
+                  obscureText: true, 
                   decoration: InputDecoration(
                     hintText: 'Tu contraseña secreta',
                     border: InputBorder.none,
@@ -120,13 +115,11 @@ class _LoginPageState extends State<LoginPage> {
               
               const SizedBox(height: 50),
               
-              // --- BOTÓN LOGIN ---
               SizedBox(
-                width: double.infinity, // Para que ocupe todo el ancho
+                width: double.infinity, 
                 height: 60,
                 child: TextButton(
                   onPressed: () {
-                    print("Intentando entrar en AgroApp...");
                   },
                   style: TextButton.styleFrom(
                     backgroundColor: agroColor,
