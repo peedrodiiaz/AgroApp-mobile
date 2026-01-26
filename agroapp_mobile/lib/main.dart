@@ -1,4 +1,5 @@
 import 'package:agroapp_mobile/pages/login_page.dart';
+import 'package:agroapp_mobile/pages/menu_principal.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -8,11 +9,10 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: LoginPage()
+      home: MenuPrincipal(),
     );
   }
 }
