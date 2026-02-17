@@ -31,7 +31,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       
       final authResponse = await _authRepository.login(
-        username: event.username,
+        email: event.email,
         password: event.password,
       );
       await _tokenManager.saveToken(authResponse.token);

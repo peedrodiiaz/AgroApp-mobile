@@ -8,11 +8,11 @@ sealed class AuthEvent extends Equatable {
 }
 
 class LoginRequested extends AuthEvent {
-  final String username;
+  final String email;
   final String password;
 
   const LoginRequested({
-    required this.username,
+    required this.email,
     required this.password,
   });
 

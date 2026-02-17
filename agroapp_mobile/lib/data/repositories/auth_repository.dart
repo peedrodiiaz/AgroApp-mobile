@@ -2,22 +2,20 @@ import 'dart:convert';
 import '../../core/network/api_client.dart';
 import '../models/auth_response.dart';
 
-/// Repository para gestionar autenticación
 class AuthRepository {
   final ApiClient _apiClient;
 
   AuthRepository(this._apiClient);
 
-  // Hacemos el login
   Future<AuthResponse> login({
-    required String username,
+    required String email,
     required String password,
   }) async {
     try {
       final response = await _apiClient.post(
-        '/auth/login',
+        '/api/auth/login',
         body: {
-          'username': username,
+          'email': email,
           'password': password,
         },
       );
