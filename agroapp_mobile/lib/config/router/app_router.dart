@@ -35,7 +35,7 @@ class AppRouter {
           builder: (context, state) => const LoginScreen(),
         ),
 
-        // Ruta de Home (protegida)
+        
         GoRoute(
           path: '/home',
           name: 'home',
@@ -63,6 +63,8 @@ class AppRouter {
     );
   }
 }
+
+
 // Mtodo para escuchar cambios en el AuthBloc y refrescar la navegación
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
