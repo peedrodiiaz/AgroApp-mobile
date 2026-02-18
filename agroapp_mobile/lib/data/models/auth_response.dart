@@ -7,7 +7,7 @@ class AuthResponse {
     required this.refreshToken,
   });
 
-  // CConeryimos el json  a Onjesti AuthResponse
+  // CConertimos el json  a objeto AuthResponse
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
       token: json['token'] ?? '',

@@ -18,8 +18,7 @@ class ApiClient {
     final response = await http.get(
       url,
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        
         if (token != null) 'Authorization': 'Bearer $token',
       },
     );
@@ -38,8 +37,7 @@ class ApiClient {
     final response = await http.post(
       url,
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
+        
         if (token != null) 'Authorization': 'Bearer $token',
       },
       body: body != null ? jsonEncode(body) : null,
@@ -59,8 +57,6 @@ class ApiClient {
     final response = await http.put(
       url,
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
       },
       body: body != null ? jsonEncode(body) : null,
@@ -77,8 +73,6 @@ class ApiClient {
     final response = await http.delete(
       url,
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
         if (token != null) 'Authorization': 'Bearer $token',
       },
     );
