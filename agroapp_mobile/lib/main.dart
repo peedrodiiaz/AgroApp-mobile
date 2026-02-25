@@ -1,3 +1,5 @@
+import 'package:agroapp_mobile/data/repositories/incidencia_repository.dart';
+import 'package:agroapp_mobile/presentation/blocs/incidencias/incidencias_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agroapp_mobile/config/theme/app_theme.dart';
@@ -28,6 +30,7 @@ class _MyAppState extends State<MyApp> {
   late final MaquinaBloc _maquinaBloc;
   late final AsignacionBloc _asignacionBloc;
   late final GoRouter _router;
+  late final IncidenciasBloc _incidenciaBloc;
 
   @override
   void initState() {
@@ -38,6 +41,7 @@ class _MyAppState extends State<MyApp> {
     final authRepository = AuthRepository(apiClient);
     final maquinaRepository = MaquinaRepository(apiClient);
     final asignacionRepository = AsignacionRepository(apiClient);
+    final incidenciaRepository = IncidenciaRepository(apiClient);
 
     _authBloc = AuthBloc(
       authRepository: authRepository,
@@ -46,6 +50,7 @@ class _MyAppState extends State<MyApp> {
 
     _maquinaBloc = MaquinaBloc(maquinaRepository: maquinaRepository);
     _asignacionBloc = AsignacionBloc(asignacionRepository: asignacionRepository);
+    _incidenciaBloc = IncidenciasBloc(incidenciaRepository: incidenciaRepository);
 
     _router = AppRouter.createRouter(_authBloc);
   }
@@ -55,6 +60,7 @@ class _MyAppState extends State<MyApp> {
     _authBloc.close();
     _maquinaBloc.close();
     _asignacionBloc.close();
+    _incidenciaBloc.close();
     super.dispose();
   }
 
@@ -65,6 +71,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider.value(value: _authBloc),
         BlocProvider.value(value: _maquinaBloc),
         BlocProvider.value(value: _asignacionBloc),
+        BlocProvider.value(value: _incidenciaBloc),
       ],
       child: MaterialApp.router(
         title: 'AgroApp',

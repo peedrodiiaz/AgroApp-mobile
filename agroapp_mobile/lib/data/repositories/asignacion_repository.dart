@@ -44,4 +44,26 @@ class AsignacionRepository {
       throw Exception('Error de conexión: $e');
     }
   }
+
+  Future<void> createAsignacion({
+    required String fechaInicio,
+    required String fechaFin,
+    required String descripcion,
+    required int maquinaId,
+  }) async {
+    final response = await apiClient.post(
+      '/api/asignaciones',
+      body: {
+        'fechaInicio': fechaInicio,
+        'fechaFin': fechaFin,
+        'descripcion': descripcion,
+        'maquinaId': maquinaId,
+        'trabajadorId': 0, // el backend lo saca del token
+      },
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Error al crear asignación: ${response.statusCode}');
+    }
+  }
 }
