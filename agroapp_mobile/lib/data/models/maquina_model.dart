@@ -1,43 +1,50 @@
 class Maquina {
   final int id;
   final String nombre;
-  final String tipo;
-  final String matricula;
+  final String? modelo;
+  final String? numSerie;
+  final String? fechaCompra;
   final String estado;
-  final DateTime? fechaAdquisicion;
 
   Maquina({
     required this.id,
     required this.nombre,
-    required this.tipo,
-    required this.matricula,
+    this.modelo,
+    this.numSerie,
+    this.fechaCompra,
     required this.estado,
-    this.fechaAdquisicion,
   });
 
-  // Convierte JSON a objeto máquina
   factory Maquina.fromJson(Map<String, dynamic> json) {
+    String? fechaCompraStr;
+    final raw = json['fechaCompra'];
+    if (raw is String) {
+      fechaCompraStr = raw;
+    } else if (raw is List && raw.length >= 3) {
+      final y = raw[0].toString().padLeft(4, '0');
+      final m = raw[1].toString().padLeft(2, '0');
+      final d = raw[2].toString().padLeft(2, '0');
+      fechaCompraStr = '$y-$m-$d';
+    }
+
     return Maquina(
-      id: json['id'] ?? 0,
-      nombre: json['nombre'] ?? '',
-      tipo: json['tipo'] ?? '',
-      matricula: json['matricula'] ?? '',
-      estado: json['estado'] ?? '',
-      fechaAdquisicion: json['fechaAdquisicion'] != null
-          ? DateTime.parse(json['fechaAdquisicion'])
-          : null,
+      id: (json['id'] as num?)?.toInt() ?? 0,
+      nombre: json['nombre'] as String? ?? '',
+      modelo: json['modelo'] as String?,
+      numSerie: json['numSerie'] as String?,
+      fechaCompra: fechaCompraStr,
+      estado: (json['estado'] as String?) ?? '',
     );
   }
 
-  // Convierte objeto Maquina a JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'nombre': nombre,
-      'tipo': tipo,
-      'matricula': matricula,
+      'modelo': modelo,
+      'numSerie': numSerie,
+      'fechaCompra': fechaCompra,
       'estado': estado,
-      'fechaAdquisicion': fechaAdquisicion?.toIso8601String(),
     };
   }
 }

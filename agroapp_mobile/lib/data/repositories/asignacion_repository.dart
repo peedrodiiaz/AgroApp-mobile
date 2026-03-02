@@ -14,7 +14,8 @@ class AsignacionRepository {
         '/api/asignaciones/mis-asignaciones',
       );
       if (response.statusCode == 200) {
-        final List<dynamic> asignacionListJson = jsonDecode(response.body);
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> asignacionListJson = _extractList(decoded);
         return asignacionListJson
             .map((json) => Asignacion.fromJson(json))
             .toList();
@@ -33,7 +34,8 @@ class AsignacionRepository {
       final response = await apiClient.get('/api/asignaciones');
 
       if (response.statusCode == 200) {
-        final List<dynamic> jsonList = jsonDecode(response.body);
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> jsonList = _extractList(decoded);
         return jsonList.map((json) => Asignacion.fromJson(json)).toList();
       } else {
         throw Exception(
@@ -43,6 +45,32 @@ class AsignacionRepository {
     } catch (e) {
       throw Exception('Error de conexión: $e');
     }
+  }
+
+  Future<List<Asignacion>> getByMaquina(int maquinaId) async {
+    try {
+      final response = await apiClient.get('/api/asignaciones/maquina/$maquinaId');
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        final decoded = jsonDecode(response.body);
+        final List<dynamic> jsonList = _extractList(decoded);
+        return jsonList.map((json) => Asignacion.fromJson(json)).toList();
+      } else {
+        throw Exception('Error al obtener asignaciones: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error de conexión: $e');
+    }
+  }
+
+  List<dynamic> _extractList(dynamic decoded) {
+    if (decoded is List) return decoded;
+    if (decoded is Map<String, dynamic>) {
+      return (decoded['content'] ??
+          decoded['data'] ??
+          decoded['asignaciones'] ??
+          []) as List<dynamic>;
+    }
+    return [];
   }
 
   Future<void> createAsignacion({

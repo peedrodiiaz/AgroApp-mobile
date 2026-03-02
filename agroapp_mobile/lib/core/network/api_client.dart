@@ -10,73 +10,52 @@ class ApiClient {
 
   ApiClient(this._tokenManager);
 
-  // GET 
+  Map<String, String> _headers({String? token, bool hasBody = false}) {
+    return {
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  // GET
   Future<http.Response> get(String endpoint) async {
     final url = Uri.parse('$baseUrl$endpoint');
     final token = await _tokenManager.getToken();
-
-    final response = await http.get(
-      url,
-      headers: {
-        
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
-
-    return response;
+    return http.get(url, headers: _headers(token: token));
   }
 
-  // POST 
+  // POST
   Future<http.Response> post(
     String endpoint, {
     Map<String, dynamic>? body,
   }) async {
     final url = Uri.parse('$baseUrl$endpoint');
     final token = await _tokenManager.getToken();
-
-    final response = await http.post(
+    return http.post(
       url,
-      headers: {
-        
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
+      headers: _headers(token: token, hasBody: true),
       body: body != null ? jsonEncode(body) : null,
     );
-
-    return response;
   }
 
-  // PUT 
+  // PUT
   Future<http.Response> put(
     String endpoint, {
     Map<String, dynamic>? body,
   }) async {
     final url = Uri.parse('$baseUrl$endpoint');
     final token = await _tokenManager.getToken();
-
-    final response = await http.put(
+    return http.put(
       url,
-      headers: {
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
+      headers: _headers(token: token, hasBody: true),
       body: body != null ? jsonEncode(body) : null,
     );
-
-    return response;
   }
 
-  // DELETE 
+  // DELETE
   Future<http.Response> delete(String endpoint) async {
     final url = Uri.parse('$baseUrl$endpoint');
     final token = await _tokenManager.getToken();
-
-    final response = await http.delete(
-      url,
-      headers: {
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
-
-    return response;
+    return http.delete(url, headers: _headers(token: token));
   }
 }

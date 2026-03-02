@@ -2,13 +2,12 @@ import 'package:agroapp_mobile/data/models/trabajador_response.dart';
 
 import 'maquina_model.dart';
 
-
 class Asignacion {
   final int id;
   final Maquina maquina;
   final Trabajador trabajador;
-  final DateTime fechaInicio;
-  final DateTime? fechaFin;
+  final String fechaInicio;
+  final String? fechaFin;
   final String? descripcion;
 
   Asignacion({
@@ -20,20 +19,32 @@ class Asignacion {
     this.descripcion,
   });
 
-  // Convierte JSON  a objeto Asignacion
+  static String? _parseLocalDate(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is String) return raw;
+    if (raw is List && raw.length >= 3) {
+      final y = raw[0].toString().padLeft(4, '0');
+      final m = raw[1].toString().padLeft(2, '0');
+      final d = raw[2].toString().padLeft(2, '0');
+      return '$y-$m-$d';
+    }
+    return null;
+  }
+
   factory Asignacion.fromJson(Map<String, dynamic> json) {
     return Asignacion(
-      id: json['id'] ?? 0,
+      id: (json['id'] as num?)?.toInt() ?? 0,
       maquina: Maquina.fromJson(json['maquina'] ?? {}),
       trabajador: Trabajador.fromJson(json['trabajador'] ?? {}),
-      fechaInicio: DateTime.parse(json['fechaInicio']),
-      fechaFin: json['fechaFin'] != null 
-          ? DateTime.parse(json['fechaFin']) 
-          : null,
-      descripcion: json['descripcion'],
+      fechaInicio: _parseLocalDate(json['fechaInicio']) ?? '',
+      fechaFin: _parseLocalDate(json['fechaFin']),
+      descripcion: json['descripcion'] as String?,
     );
   }
 
-  /// Verifica si la asignación está activa
-  bool get isActiva => fechaFin == null || fechaFin!.isAfter(DateTime.now());
+  bool get isActiva {
+    if (fechaFin == null) return true;
+    final fin = DateTime.tryParse(fechaFin!);
+    return fin == null || fin.isAfter(DateTime.now());
+  }
 }

@@ -173,7 +173,7 @@ class _RegistrarIncidenciaScreenState
                                   p,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    color: isSelected ? color : Colors.grey,
+                                    color: isSelected ? Colors.white : Colors.grey,
                                     fontWeight: isSelected
                                         ? FontWeight.bold
                                         : FontWeight.normal,

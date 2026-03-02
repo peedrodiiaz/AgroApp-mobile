@@ -31,6 +31,9 @@ class _MyAppState extends State<MyApp> {
   late final AsignacionBloc _asignacionBloc;
   late final GoRouter _router;
   late final IncidenciasBloc _incidenciaBloc;
+  late final MaquinaRepository _maquinaRepository;
+  late final AsignacionRepository _asignacionRepository;
+  late final IncidenciaRepository _incidenciaRepository;
 
   @override
   void initState() {
@@ -42,6 +45,10 @@ class _MyAppState extends State<MyApp> {
     final maquinaRepository = MaquinaRepository(apiClient);
     final asignacionRepository = AsignacionRepository(apiClient);
     final incidenciaRepository = IncidenciaRepository(apiClient);
+
+    _maquinaRepository = maquinaRepository;
+    _asignacionRepository = asignacionRepository;
+    _incidenciaRepository = incidenciaRepository;
 
     _authBloc = AuthBloc(
       authRepository: authRepository,
@@ -72,6 +79,9 @@ class _MyAppState extends State<MyApp> {
         BlocProvider.value(value: _maquinaBloc),
         BlocProvider.value(value: _asignacionBloc),
         BlocProvider.value(value: _incidenciaBloc),
+        RepositoryProvider.value(value: _maquinaRepository),
+        RepositoryProvider.value(value: _asignacionRepository),
+        RepositoryProvider.value(value: _incidenciaRepository),
       ],
       child: MaterialApp.router(
         title: 'AgroApp',

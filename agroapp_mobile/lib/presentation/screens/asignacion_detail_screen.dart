@@ -32,7 +32,7 @@ class AsignacionDetailScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black,
+                    color: Colors.black.withOpacity(0.06),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -126,7 +126,7 @@ class AsignacionDetailScreen extends StatelessWidget {
                   _buildInfoRow(
                     Icons.agriculture,
                     'Máquina',
-                    asignacion.maquinaNombre ?? '-',
+                    asignacion.maquina?.nombre ?? '-',
                   ),
                 ],
               ),

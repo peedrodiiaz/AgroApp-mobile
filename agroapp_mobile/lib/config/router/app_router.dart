@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:agroapp_mobile/presentation/screens/asignacion_detail_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/home_screen.dart';
+import 'package:agroapp_mobile/presentation/screens/maquinas_list_screen.dart';
+import 'package:agroapp_mobile/presentation/screens/profile_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/login_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/maquina_detail_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/nueva_reserva_screen.dart';
@@ -56,6 +58,11 @@ class AppRouter {
           builder: (context, state) => const HomeScreen(),
         ),
         GoRoute(
+          path: '/maquinas',
+          name: 'maquinasList',
+          builder: (context, state) => const MaquinasListScreen(),
+        ),
+        GoRoute(
           path: '/maquina/:id',
           name: 'maquinaDetail',
           builder: (context, state) {
@@ -75,6 +82,11 @@ class AppRouter {
           path: '/registrar-incidencia',
           name: 'registrarIncidencia',
           builder: (context, state) => const RegistrarIncidenciaScreen(),
+        ),
+        GoRoute(
+          path: '/perfil',
+          name: 'perfil',
+          builder: (context, state) => const ProfileScreen(),
         ),
       ],
 
