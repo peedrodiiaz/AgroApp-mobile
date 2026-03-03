@@ -42,7 +42,8 @@ class AsignacionBloc extends Bloc<AsignacionEvent, AsignacionState> {
       );
       emit(AsignacionCreated());
     } catch (e) {
-      emit(AsignacionError(e.toString()));
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      emit(AsignacionError(msg));
     }
   }
 }

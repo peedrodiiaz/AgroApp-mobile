@@ -91,7 +91,21 @@ class AsignacionRepository {
     );
 
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Error al crear asignación: ${response.statusCode}');
+      String mensaje = 'Error al crear la reserva (${response.statusCode})';
+      try {
+        final body = jsonDecode(response.body);
+        if (body is Map<String, dynamic>) {
+          mensaje =
+              body['message'] ??
+              body['mensaje'] ??
+              body['error'] ??
+              body['detail'] ??
+              mensaje;
+        } else if (body is String && body.isNotEmpty) {
+          mensaje = body;
+        }
+      } catch (_) {}
+      throw Exception(mensaje);
     }
   }
 }

@@ -89,7 +89,7 @@ class _NuevaReservaScreenState extends State<NuevaReservaScreen> {
           } else if (state is AsignacionError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Error: ${state.mensaje}'),
+                content: Text(state.mensaje),
                 backgroundColor: Colors.red,
               ),
             );
@@ -128,7 +128,7 @@ class _NuevaReservaScreenState extends State<NuevaReservaScreen> {
                               onChanged: (val) =>
                                   setState(() => _maquinaIdSeleccionada = val),
                               validator: (v) =>
-                                  v == null ? 'Selecciona una máquina' : null,
+                                  v == null ? 'Tienes que seleccionar una máquina' : null,
                             );
                           }
                           return const SizedBox();
@@ -266,6 +266,36 @@ class _NuevaReservaScreenState extends State<NuevaReservaScreen> {
   }
 
   void _submit() {
+    if (_maquinaIdSeleccionada == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tienes que seleccionar una máquina'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      _formKey.currentState!.validate();
+      return;
+    }
+
+    final maquinaState = context.read<MaquinaBloc>().state;
+    if (maquinaState is MaquinaLoaded) {
+      final maquina = maquinaState.maquinas.firstWhere(
+        (m) => m.id == _maquinaIdSeleccionada,
+        orElse: () => maquinaState.maquinas.first,
+      );
+      if (maquina.estado == 'MANTENIMIENTO') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'No puedes reservar "${maquina.nombre}" porque está en mantenimiento',
+            ),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+    }
+
     if (_formKey.currentState!.validate()) {
       if (_fechaInicio == null || _fechaFin == null) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -51,7 +51,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Header azul con total
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
@@ -187,13 +186,17 @@ class _HistorialScreenState extends State<HistorialScreen> {
               label,
               style: const TextStyle(fontSize: 11, color: Colors.grey),
             ),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+              SizedBox(
+                width: 300,
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
               ),
-            ),
+          
           ],
         ),
       ],

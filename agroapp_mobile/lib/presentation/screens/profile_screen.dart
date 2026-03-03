@@ -82,13 +82,13 @@ class ProfileScreen extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF1B5E20), Color(0xFF4CAF50)],
+              colors: [Color(0xFF1B5E20), Color.fromARGB(255, 74, 192, 78)],
             ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 40),
+              const SizedBox(height: 100),
               // Avatar con iniciales
               Container(
                 width: 80,
