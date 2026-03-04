@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:agroapp_mobile/core/network/api_client.dart';
 import 'package:agroapp_mobile/data/models/asignacion_model.dart';
+import 'package:flutter/foundation.dart';
 
 class AsignacionRepository {
   final ApiClient apiClient;
@@ -9,56 +10,40 @@ class AsignacionRepository {
   AsignacionRepository(this.apiClient);
 
   Future<List<Asignacion>> getMisAsignaciones() async {
-    try {
-      final response = await apiClient.get(
-        '/api/asignaciones/mis-asignaciones',
-      );
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        final List<dynamic> asignacionListJson = _extractList(decoded);
-        return asignacionListJson
-            .map((json) => Asignacion.fromJson(json))
-            .toList();
-      } else {
-        throw Exception(
-          'Error al obtener asignaciones: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      throw Exception('Error al obtener asignaciones: $e');
+    final response = await apiClient.get('/api/asignaciones');
+    debugPrint('MIS-ASIGNACIONES status: ${response.statusCode}');
+    debugPrint('MIS-ASIGNACIONES body: ${response.body}');
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      final List<dynamic> asignacionListJson = _extractList(decoded);
+      return asignacionListJson.map((json) => Asignacion.fromJson(json)).toList();
+    } else {
+      throw Exception('Error al obtener asignaciones: ${response.statusCode}');
     }
   }
 
   Future<List<Asignacion>> getAsignaciones() async {
-    try {
-      final response = await apiClient.get('/api/asignaciones');
-
-      if (response.statusCode == 200) {
-        final decoded = jsonDecode(response.body);
-        final List<dynamic> jsonList = _extractList(decoded);
-        return jsonList.map((json) => Asignacion.fromJson(json)).toList();
-      } else {
-        throw Exception(
-          'Error al obtener asignaciones: ${response.statusCode}',
-        );
-      }
-    } catch (e) {
-      throw Exception('Error de conexión: $e');
+    final response = await apiClient.get('/api/asignaciones');
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      final List<dynamic> jsonList = _extractList(decoded);
+      return jsonList.map((json) => Asignacion.fromJson(json)).toList();
+    } else {
+      throw Exception('Error al obtener asignaciones: ${response.statusCode}');
     }
   }
 
   Future<List<Asignacion>> getByMaquina(int maquinaId) async {
-    try {
-      final response = await apiClient.get('/api/asignaciones/maquina/$maquinaId');
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        final decoded = jsonDecode(response.body);
-        final List<dynamic> jsonList = _extractList(decoded);
-        return jsonList.map((json) => Asignacion.fromJson(json)).toList();
-      } else {
-        throw Exception('Error al obtener asignaciones: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Error de conexión: $e');
+    final response = await apiClient.get('/api/asignaciones');
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      final List<dynamic> jsonList = _extractList(decoded);
+      return jsonList
+          .map((json) => Asignacion.fromJson(json))
+          .where((a) => a.maquina.id == maquinaId)
+          .toList();
+    } else {
+      throw Exception('Error al obtener asignaciones: ${response.statusCode}');
     }
   }
 

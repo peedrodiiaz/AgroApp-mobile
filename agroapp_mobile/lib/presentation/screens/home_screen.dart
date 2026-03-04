@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:agroapp_mobile/presentation/blocs/maquina/maquina_bloc.dart';
 import 'package:agroapp_mobile/presentation/blocs/asignacion/asignacion_bloc.dart';
@@ -7,6 +8,22 @@ import 'package:agroapp_mobile/data/models/asignacion_model.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+class _C {
+  static const bg = Color(0xFFF1F8F1);          // fondo verde muy suave
+  static const surface = Color(0xFFFFFFFF);
+  static const dark = Color(0xFF1B5E20);         // verde oscuro cabecera
+  static const darkMid = Color(0xFF2E7D32);      // verde medio stats band
+  static const accent = Color(0xFF43A047);       // verde brillante (FAB, dots)
+  static const accentDeep = Color(0xFF1B5E20);   // verde profundo
+  static const accentSurface = Color(0xFFE8F5E9);// superficie verde claro
+  static const rust = Color(0xFFE65100);         // naranja incidencias
+  static const rustSurface = Color(0xFFFFF3E0);
+  static const sky = Color(0xFF1565C0);          // azul historial
+  static const skySurface = Color(0xFFE3F2FD);
+  static const muted = Color(0xFF5A6A5C);        // texto apagado
+  static const mutedLine = Color(0xFFCCE3CC);    // línea divisor
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -14,21 +31,40 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  int _selectedNav = 0;
+  AnimationController? _slideCtrl;
+  Animation<Offset>? _slideAnim;
+  Animation<double>? _fadeAnim;
 
   @override
   void initState() {
     super.initState();
+    final ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 560));
+    _slideCtrl = ctrl;
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.08),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: ctrl, curve: Curves.easeOutCubic));
+    _fadeAnim = CurvedAnimation(parent: ctrl, curve: Curves.easeOut);
+    ctrl.forward();
+
     context.read<MaquinaBloc>().add(MaquinaLoadAll());
     context.read<AsignacionBloc>().add(AsignacionLoadByTrabajador());
   }
 
+  @override
+  void dispose() {
+    _slideCtrl?.dispose();
+    super.dispose();
+  }
+
   String _fmtDate(String? date) {
-    if (date == null || date.isEmpty) return '-';
+    if (date == null || date.isEmpty) return '—';
     try {
-      final dt = DateTime.parse(date);
-      return DateFormat('d MMM', 'es').format(dt);
+      return DateFormat('d MMM', 'es').format(DateTime.parse(date));
     } catch (_) {
       return date;
     }
@@ -41,114 +77,179 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: _C.dark,
+      statusBarIconBrightness: Brightness.light,
+    ));
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      body: RefreshIndicator(
-        color: const Color(0xFF2E7D32),
-        onRefresh: _onRefresh,
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            _buildAppBar(),
-            SliverToBoxAdapter(child: _buildNuevaReservaBtn()),
-            SliverToBoxAdapter(child: _buildStatsCards()),
-            SliverToBoxAdapter(child: _buildReservasActivas()),
-            SliverToBoxAdapter(child: _buildQuickActions()),
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          ],
-        ),
+      backgroundColor: _C.bg,
+      body: Column(
+        children: [
+          _buildHeader(),
+          Expanded(
+            child: FadeTransition(
+              opacity: _fadeAnim ?? const AlwaysStoppedAnimation(1.0),
+              child: SlideTransition(
+                position: _slideAnim ?? const AlwaysStoppedAnimation(Offset.zero),
+                child: RefreshIndicator(
+                  color: _C.accent,
+                  backgroundColor: _C.dark,
+                  strokeWidth: 2,
+                  onRefresh: _onRefresh,
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(bottom: 100),
+                    children: [
+                      _buildStatsBand(),
+                      const SizedBox(height: 28),
+                      _buildSectionLabel('RESERVAS ACTIVAS'),
+                      _buildTimeline(),
+                      const SizedBox(height: 28),
+                      _buildSectionLabel('ACCESO RÁPIDO'),
+                      _buildQuickRow(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      floatingActionButton: _buildFAB(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      bottomNavigationBar: _buildNav(),
     );
   }
 
+  // ── Cabecera ────────────────────────────────────────────────────────────────
+  Widget _buildHeader() {
+    return Container(
+      color: _C.dark,
+      child: SafeArea(
+        bottom: false,
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            final user = (state is AuthAuthenticated)
+                ? state.authResponse.user
+                : null;
+            final nombre = user?.nombre ?? '';
+            final rol = user?.rol ?? '';
+            final initials = nombre.isNotEmpty
+                ? nombre
+                    .trim()
+                    .split(' ')
+                    .take(2)
+                    .map((w) => w[0].toUpperCase())
+                    .join()
+                : 'AG';
 
-
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      pinned: true,
-      backgroundColor: const Color(0xFF2E7D32),
-      elevation: 0,
-      automaticallyImplyLeading: false,
-      expandedHeight: 88,
-      flexibleSpace: FlexibleSpaceBar(
-        background: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                BlocBuilder<AuthBloc, AuthState>(
-                  builder: (context, state) {
-                    final nombre = (state is AuthAuthenticated)
-                        ? (state.authResponse.user?.nombre ?? '')
-                        : '';
-                    return Column(
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 16, 20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          'AgroApp',
-                          style: TextStyle(
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: _C.accent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            const Text(
+                              'AGROAPP',
+                              style: TextStyle(
+                                color: _C.accent,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 2.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          nombre.isNotEmpty ? nombre : 'Bienvenido',
+                          style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            height: 1.1,
+                            letterSpacing: -0.5,
                           ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
-                          'Bienvenido${nombre.isNotEmpty ? ', $nombre' : ''}',
+                          rol.isNotEmpty ? rol.toLowerCase() : 'trabajador',
                           style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
+                            color: Color(0xFFA5C8A5),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.logout_rounded, color: Colors.white),
-                  tooltip: 'Cerrar sesiÃ³n',
-                  onPressed: () =>
-                      context.read<AuthBloc>().add(LogoutRequested()),
-                ),
-              ],
-            ),
-          ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: () => context
+                            .push('/perfil')
+                            .then((_) => setState(() => _selectedNav = 0)),
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: _C.accentDeep,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                                color: _C.accent.withOpacity(0.5), width: 1.5),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            initials,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () =>
+                            context.read<AuthBloc>().add(LogoutRequested()),
+                        child: const Icon(
+                          Icons.logout_rounded,
+                          color: Color(0xFF81A882),
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
-
-
-  Widget _buildNuevaReservaBtn() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2E7D32),
-          foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          elevation: 2,
-          shadowColor: const Color(0xFF2E7D32).withOpacity(0.4),
-        ),
-        icon: const Icon(Icons.add_rounded, size: 22),
-        label: const Text(
-          'Nueva Reserva',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        onPressed: () => context.push('/nueva-reserva').then((_) => _onRefresh()),
-      ),
-    );
-  }
-
-
-  Widget _buildStatsCards() {
+  // ── Banda de estadísticas ───────────────────────────────────────────────────
+  Widget _buildStatsBand() {
     return BlocBuilder<AsignacionBloc, AsignacionState>(
       builder: (context, state) {
         int activas = 0, proximas = 0, vencidas = 0;
@@ -156,8 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
           final now = DateTime.now().toLocal();
           for (final a in state.asignaciones) {
             final inicio = DateTime.tryParse(a.fechaInicio)?.toLocal();
-            final fin =
-                a.fechaFin != null ? DateTime.tryParse(a.fechaFin!)?.toLocal() : null;
+            final fin = a.fechaFin != null
+                ? DateTime.tryParse(a.fechaFin!)?.toLocal()
+                : null;
             if (inicio != null && inicio.isAfter(now)) {
               proximas++;
             } else if (fin == null || fin.isAfter(now)) {
@@ -168,33 +270,16 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         }
 
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+        return Container(
+          color: _C.darkMid,
+          padding: const EdgeInsets.symmetric(vertical: 22),
           child: Row(
             children: [
-              _statCard(
-                value: '$activas',
-                label: 'Activas',
-                icon: Icons.calendar_today_rounded,
-                color: const Color(0xFF1565C0),
-                bg: const Color(0xFFE3F2FD),
-              ),
-              const SizedBox(width: 12),
-              _statCard(
-                value: '$proximas',
-                label: 'Proximas',
-                icon: Icons.schedule_rounded,
-                color: const Color(0xFF2E7D32),
-                bg: const Color(0xFFE8F5E9),
-              ),
-              const SizedBox(width: 12),
-              _statCard(
-                value: '$vencidas',
-                label: 'Vencidas',
-                icon: Icons.warning_amber_rounded,
-                color: const Color(0xFFE65100),
-                bg: const Color(0xFFFFF3E0),
-              ),
+              _statBig('$activas', 'activas', const Color(0xFFA5D6A7)),
+              _vertDivider(),
+              _statBig('$proximas', 'próximas', const Color(0xFF81D4FA)),
+              _vertDivider(),
+              _statBig('$vencidas', 'vencidas', const Color(0xFFFF8A65)),
             ],
           ),
         );
@@ -202,303 +287,293 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _statCard({
-    required String value,
-    required String label,
-    required IconData icon,
-    required Color color,
-    required Color bg,
-  }) {
+  Widget _statBig(String value, String label, Color accent) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(14),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: TextStyle(
-                color: color,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: color.withOpacity(0.7),
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-  Widget _buildReservasActivas() {
-    return BlocBuilder<AsignacionBloc, AsignacionState>(
-      builder: (context, state) {
-        List<Asignacion> activas = [];
-        if (state is AsignacionLoaded) {
-          final now = DateTime.now().toLocal();
-          activas = state.asignaciones.where((a) {
-            final inicio = DateTime.tryParse(a.fechaInicio)?.toLocal();
-            final fin = a.fechaFin != null
-                ? DateTime.tryParse(a.fechaFin!)?.toLocal()
-                : null;
-            final noEsProxima = inicio == null || !inicio.isAfter(now);
-            final noEsVencida = fin == null || fin.isAfter(now);
-            return noEsProxima && noEsVencida;
-          }).toList();
-        }
-
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Reservas Activas',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => context.push('/historial'),
-                    child: const Text(
-                      'Ver todas',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF2E7D32),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              if (state is AsignacionLoading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF2E7D32),
-                    ),
-                  ),
-                )
-              else if (state is AsignacionError)
-                _errorState(state.mensaje)
-              else if (activas.isEmpty)
-                _emptyState('No tienes reservas activas')
-              else
-                ...activas.map(_buildAsignacionCard),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildAsignacionCard(Asignacion asignacion) {
-    return GestureDetector(
-      onTap: () =>
-          context.push('/asignacion/${asignacion.id}', extra: asignacion),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE8F5E9), width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          asignacion.maquina.nombre,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1A1A1A),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8F5E9),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF2E7D32),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Text(
-                              'Activa',
-                              style: TextStyle(
-                                color: Color(0xFF2E7D32),
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (asignacion.descripcion != null &&
-                      asignacion.descripcion!.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        asignacion.descripcion!,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Color(0xFF555555),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_today_outlined,
-                        size: 13,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        '${_fmtDate(asignacion.fechaInicio)} - ${_fmtDate(asignacion.fechaFin)}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded, color: Colors.grey),
-          ],
-        ),
-      ),
-    );
-  }
-
-
-  Widget _buildQuickActions() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-      child: Row(
+      child: Column(
         children: [
-          _actionCard(
-            icon: Icons.warning_amber_rounded,
-            iconColor: const Color(0xFFE65100),
-            iconBg: const Color(0xFFFFF3E0),
-            title: 'Reportar',
-            subtitle: 'Incidencia',
-            onTap: () => context.push('/registrar-incidencia'),
+          Text(
+            value,
+            style: TextStyle(
+              color: accent,
+              fontSize: 36,
+              fontWeight: FontWeight.w900,
+              height: 1,
+              letterSpacing: -1,
+            ),
           ),
-          const SizedBox(width: 16),
-          _actionCard(
-            icon: Icons.build_circle_outlined,
-            iconColor: const Color(0xFF1565C0),
-            iconBg: const Color(0xFFE3F2FD),
-            title: 'Historial',
-            subtitle: 'de Uso',
-            onTap: () => context.push('/historial'),
+          const SizedBox(height: 4),
+          Text(
+            label.toUpperCase(),
+            style: const TextStyle(
+              color: Color(0xFFA5C8A5),
+              fontSize: 9,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.8,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _actionCard({
+  Widget _vertDivider() {
+    return Container(width: 1, height: 40, color: const Color(0xFF1A5C1A));
+  }
+
+  // ── Etiqueta de sección ─────────────────────────────────────────────────────
+  Widget _buildSectionLabel(String text) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+      child: Row(
+        children: [
+          Text(
+            text,
+            style: const TextStyle(
+              color: _C.muted,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 2.2,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Container(height: 1, color: _C.mutedLine)),
+        ],
+      ),
+    );
+  }
+
+  // ── Timeline de reservas ────────────────────────────────────────────────────
+  Widget _buildTimeline() {
+    return BlocBuilder<AsignacionBloc, AsignacionState>(
+      builder: (context, state) {
+        if (state is AsignacionLoading) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 32),
+            child: Center(
+                child: CircularProgressIndicator(
+                    color: _C.accent, strokeWidth: 2)),
+          );
+        }
+        if (state is AsignacionError) return _errorWidget(state.mensaje);
+        if (state is! AsignacionLoaded) return _emptyWidget('Sin datos');
+
+        final now = DateTime.now().toLocal();
+        final activas = state.asignaciones.where((a) {
+          final inicio = DateTime.tryParse(a.fechaInicio)?.toLocal();
+          final fin = a.fechaFin != null
+              ? DateTime.tryParse(a.fechaFin!)?.toLocal()
+              : null;
+          return (inicio == null || !inicio.isAfter(now)) &&
+              (fin == null || fin.isAfter(now));
+        }).toList();
+
+        if (activas.isEmpty) return _emptyWidget('No tienes reservas activas');
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+          child: Column(
+            children: [
+              for (int i = 0; i < activas.length; i++)
+                _timelineItem(activas[i], i == activas.length - 1),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _timelineItem(Asignacion a, bool isLast) {
+    return GestureDetector(
+      onTap: () => context.push('/asignacion/${a.id}', extra: a),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 24,
+            child: Column(
+              children: [
+                Container(
+                  width: 16,
+                  height: 16,
+                  margin: const EdgeInsets.only(top: 2),
+                  decoration: BoxDecoration(
+                    color: _C.accent,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: _C.bg, width: 2.5),
+                    boxShadow: [
+                      BoxShadow(
+                          color: _C.accent.withOpacity(0.35),
+                          blurRadius: 6,
+                          spreadRadius: 1),
+                    ],
+                  ),
+                ),
+                if (!isLast) Container(width: 2, height: 72, color: _C.mutedLine),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: _C.surface,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _C.mutedLine, width: 1),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            a.maquina.nombre,
+                            style: const TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w800,
+                              color: _C.dark,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          if (a.descripcion != null &&
+                              a.descripcion!.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              a.descripcion!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 12, color: _C.muted),
+                            ),
+                          ],
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              const Icon(Icons.calendar_today_rounded,
+                                  size: 11, color: _C.muted),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${_fmtDate(a.fechaInicio)}  ›  ${_fmtDate(a.fechaFin)}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: _C.muted,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _C.accent.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'ACTIVA',
+                            style: TextStyle(
+                              color: _C.accentDeep,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 13, color: _C.mutedLine),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Acceso rápido ───────────────────────────────────────────────────────────
+  Widget _buildQuickRow() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      child: Row(
+        children: [
+          _quickTile(
+            icon: Icons.report_problem_outlined,
+            label: 'Incidencias',
+            color: _C.rust,
+            bg: _C.rustSurface,
+            onTap: () => context.push('/registrar-incidencia'),
+          ),
+          const SizedBox(width: 12),
+          _quickTile(
+            icon: Icons.history_rounded,
+            label: 'Historial',
+            color: _C.sky,
+            bg: _C.skySurface,
+            onTap: () => context.push('/historial'),
+          ),
+          const SizedBox(width: 12),
+          _quickTile(
+            icon: Icons.agriculture_outlined,
+            label: 'Máquinas',
+            color: _C.accentDeep,
+            bg: _C.accentSurface,
+            onTap: () => context.push('/maquinas'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _quickTile({
     required IconData icon,
-    required Color iconColor,
-    required Color iconBg,
-    required String title,
-    required String subtitle,
+    required String label,
+    required Color color,
+    required Color bg,
     required VoidCallback onTap,
   }) {
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 22),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            color: _C.surface,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: _C.mutedLine, width: 1),
           ),
           child: Column(
             children: [
               Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(color: iconBg, shape: BoxShape.circle),
-                child: Icon(icon, color: iconColor, size: 24),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A1A),
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: Icon(icon, color: color, size: 20),
               ),
+              const SizedBox(height: 9),
               Text(
-                subtitle,
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: _C.darkMid,
+                  letterSpacing: 0.1,
+                ),
               ),
             ],
           ),
@@ -507,73 +582,153 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-  Widget _emptyState(String msg) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      alignment: Alignment.center,
-      child: Text(msg, style: const TextStyle(color: Colors.grey, fontSize: 14)),
-    );
-  }
-
-  Widget _errorState(String msg) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24),
-      alignment: Alignment.center,
-      child: Text(
-        'Error: $msg',
-        style: const TextStyle(color: Colors.red, fontSize: 14),
+  // ── FAB ─────────────────────────────────────────────────────────────────────
+  Widget _buildFAB() {
+    return FloatingActionButton.extended(
+      onPressed: () =>
+          context.push('/nueva-reserva').then((_) => _onRefresh()),
+      backgroundColor: _C.accent,
+      foregroundColor: Colors.white,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      icon: const Icon(Icons.add_rounded, size: 22),
+      label: const Text(
+        'Nueva reserva',
+        style: TextStyle(
+          fontWeight: FontWeight.w800,
+          fontSize: 13,
+          letterSpacing: 0.2,
+        ),
       ),
     );
   }
 
+  // ── Nav inferior ────────────────────────────────────────────────────────────
+  Widget _buildNav() {
+    const icons = [
+      Icons.home_outlined,
+      Icons.agriculture_outlined,
+      Icons.event_note_outlined,
+      Icons.person_outline_rounded,
+    ];
+    const activeIcons = [
+      Icons.home_rounded,
+      Icons.agriculture_rounded,
+      Icons.event_note_rounded,
+      Icons.person_rounded,
+    ];
 
-  BottomNavigationBar _buildBottomNav() {
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
-      selectedItemColor: const Color(0xFF2E7D32),
-      unselectedItemColor: const Color(0xFFAAAAAA),
-      backgroundColor: Colors.white,
-      type: BottomNavigationBarType.fixed,
-      selectedLabelStyle:
-          const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-      unselectedLabelStyle: const TextStyle(fontSize: 11),
-      elevation: 12,
-      onTap: (index) {
-        if (index == 1) {
-          context.push('/maquinas').then((_) {
-            setState(() => _selectedIndex = 0);
-          });
-        } else if (index == 2) {
-          context.push('/historial').then((_) {
-            setState(() => _selectedIndex = 0);
-          });
-        } else if (index == 3) {
-          context.push('/perfil').then((_) {
-            setState(() => _selectedIndex = 0);
-          });
-        } else {
-          setState(() => _selectedIndex = index);
-        }
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_rounded),
-          label: 'Inicio',
+    return Container(
+      decoration: const BoxDecoration(
+        color: _C.dark,
+        border: Border(top: BorderSide(color: Color(0xFF0D3B11), width: 1)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 60,
+          child: Row(
+            children: List.generate(4, (i) {
+              final sel = _selectedNav == i;
+              return Expanded(
+                child: InkWell(
+                  onTap: () {
+                    if (i == 1) {
+                      context.push('/maquinas')
+                          .then((_) => setState(() => _selectedNav = 0));
+                    } else if (i == 2) {
+                      context.push('/historial')
+                          .then((_) => setState(() => _selectedNav = 0));
+                    } else if (i == 3) {
+                      context.push('/perfil')
+                          .then((_) => setState(() => _selectedNav = 0));
+                    } else {
+                      setState(() => _selectedNav = i);
+                    }
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        sel ? activeIcons[i] : icons[i],
+                        color: sel ? _C.accent : const Color(0xFF5A8A5C),
+                        size: 24,
+                      ),
+                      const SizedBox(height: 4),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        width: sel ? 18 : 4,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: sel ? _C.accent : Colors.transparent,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.agriculture_rounded),
-          label: 'Máquinas',
+      ),
+    );
+  }
+
+  // ── Estados auxiliares ──────────────────────────────────────────────────────
+  Widget _emptyWidget(String msg) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 36),
+        decoration: BoxDecoration(
+          color: _C.surface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: _C.mutedLine),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_month_outlined),
-          label: 'Reservas',
+        child: Column(
+          children: [
+            Icon(Icons.inbox_rounded, size: 36, color: Colors.grey.shade300),
+            const SizedBox(height: 10),
+            Text(msg, style: const TextStyle(color: _C.muted, fontSize: 13)),
+          ],
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline_rounded),
-          label: 'Perfil',
+      ),
+    );
+  }
+
+  Widget _errorWidget(String msg) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      child: Container(
+        width: double.infinity,
+        padding:
+            const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF1EC),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: const Color(0xFFFFCFBF)),
         ),
-      ],
+        child: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded,
+                color: _C.rust, size: 22),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                msg,
+                style: const TextStyle(
+                    color: _C.rust,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
+
+

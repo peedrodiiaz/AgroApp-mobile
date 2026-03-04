@@ -37,6 +37,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _tokenManager.saveToken(authResponse.token);
       await _tokenManager.saveRefreshToken(authResponse.refreshToken);
 
+      if (authResponse.user != null) {
+        await _tokenManager.saveUser({
+          'id': authResponse.user!.id,
+          'nombre': authResponse.user!.nombre,
+          'apellido': authResponse.user!.apellido,
+          'dni': authResponse.user!.dni,
+          'email': authResponse.user!.email,
+          'telefono': authResponse.user!.telefono,
+          'rol': authResponse.user!.rol,
+        });
+      }
+
       emit(AuthAuthenticated(authResponse));
     } catch (e) {
       emit(AuthError(e.toString()));
@@ -56,15 +68,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     final hasToken = await _tokenManager.hasToken();
-    // Asi es para ver si hay un inicio de sesion
     if (hasToken) {
       final token = await _tokenManager.getToken();
       final refreshToken = await _tokenManager.getRefreshToken();
-      
+
+      final user = await _authRepository.getMe();
+
       emit(AuthAuthenticated(
         AuthResponse(
           token: token ?? '',
           refreshToken: refreshToken ?? '',
+          user: user,
         ),
       ));
     } else {

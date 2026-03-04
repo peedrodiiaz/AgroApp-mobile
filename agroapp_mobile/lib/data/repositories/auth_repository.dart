@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import '../../core/network/api_client.dart';
 import '../models/auth_response.dart';
+import '../models/trabajador_response.dart';
 
 class AuthRepository {
   final ApiClient _apiClient;
@@ -20,6 +22,7 @@ class AuthRepository {
         },
       );
 
+
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         return AuthResponse.fromJson(jsonData);
@@ -31,5 +34,15 @@ class AuthRepository {
     } catch (e) {
       throw Exception('Error de conexión: $e');
     }
+  }
+
+  Future<Trabajador?> getMe() async {
+    try {
+      final response = await _apiClient.get('/api/trabajadores/me');
+      if (response.statusCode == 200) {
+        return Trabajador.fromJson(jsonDecode(response.body));
+      }
+    } catch (_) {}
+    return null;
   }
 }

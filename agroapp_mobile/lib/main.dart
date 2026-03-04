@@ -13,8 +13,11 @@ import 'package:agroapp_mobile/presentation/blocs/auth/auth_bloc.dart';
 import 'package:agroapp_mobile/presentation/blocs/maquina/maquina_bloc.dart';
 import 'package:agroapp_mobile/presentation/blocs/asignacion/asignacion_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('es', null);
   runApp(const MyApp());
 }
 
