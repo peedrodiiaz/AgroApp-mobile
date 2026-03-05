@@ -102,7 +102,7 @@ class _MaquinaDetailScreenState extends State<MaquinaDetailScreen>
     final bg = _estadoBg(m.estado);
 
     return NestedScrollView(
-      headerSliverBuilder: (_, __) => [
+      headerSliverBuilder: (_, _) => [
         SliverAppBar(
           expandedHeight: 200,
           pinned: true,

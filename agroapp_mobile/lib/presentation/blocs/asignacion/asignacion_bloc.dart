@@ -22,7 +22,31 @@ class AsignacionBloc extends Bloc<AsignacionEvent, AsignacionState> {
     emit(AsignacionLoading());
     try {
       final asignaciones = await asignacionRepository.getMisAsignaciones();
-      emit(AsignacionLoaded(asignaciones));
+      
+      final now = DateTime.now().toLocal();
+      final List<Asignacion> activas = [];
+      final List<Asignacion> proximas = [];
+      final List<Asignacion> vencidas = [];
+
+      for (final a in asignaciones) {
+        final inicio = DateTime.tryParse(a.fechaInicio)?.toLocal();
+        final fin = a.fechaFin != null ? DateTime.tryParse(a.fechaFin!)?.toLocal() : null;
+
+        if (inicio != null && inicio.isAfter(now)) {
+          proximas.add(a);
+        } else if (fin == null || fin.isAfter(now)) {
+          activas.add(a);
+        } else {
+          vencidas.add(a);
+        }
+      }
+
+      emit(AsignacionLoaded(
+        todas: asignaciones,
+        activas: activas,
+        proximas: proximas,
+        vencidas: vencidas,
+      ));
     } catch (e) {
       emit(AsignacionError(e.toString()));
     }

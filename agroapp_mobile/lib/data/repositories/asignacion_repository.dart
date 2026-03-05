@@ -50,10 +50,11 @@ class AsignacionRepository {
   List<dynamic> _extractList(dynamic decoded) {
     if (decoded is List) return decoded;
     if (decoded is Map<String, dynamic>) {
-      return (decoded['content'] ??
+      final value = decoded['content'] ??
           decoded['data'] ??
-          decoded['asignaciones'] ??
-          []) as List<dynamic>;
+          decoded['asignaciones'];
+      if (value is List) return value;
+      return [];
     }
     return [];
   }

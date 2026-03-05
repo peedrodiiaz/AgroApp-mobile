@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:agroapp_mobile/data/repositories/incidencia_repository.dart';
 import 'package:agroapp_mobile/presentation/blocs/incidencias/incidencias_bloc.dart';
 import 'package:flutter/material.dart';
@@ -37,17 +38,19 @@ class _MyAppState extends State<MyApp> {
   late final MaquinaRepository _maquinaRepository;
   late final AsignacionRepository _asignacionRepository;
   late final IncidenciaRepository _incidenciaRepository;
+  late final ApiClient _apiClient;
+  late final StreamSubscription<void> _unauthorizedSubscription;
 
   @override
   void initState() {
     super.initState();
     final tokenManager = TokenManager();
-    final apiClient = ApiClient(tokenManager);
+    _apiClient = ApiClient(tokenManager);
 
-    final authRepository = AuthRepository(apiClient);
-    final maquinaRepository = MaquinaRepository(apiClient);
-    final asignacionRepository = AsignacionRepository(apiClient);
-    final incidenciaRepository = IncidenciaRepository(apiClient);
+    final authRepository = AuthRepository(_apiClient);
+    final maquinaRepository = MaquinaRepository(_apiClient);
+    final asignacionRepository = AsignacionRepository(_apiClient);
+    final incidenciaRepository = IncidenciaRepository(_apiClient);
 
     _maquinaRepository = maquinaRepository;
     _asignacionRepository = asignacionRepository;
@@ -58,6 +61,10 @@ class _MyAppState extends State<MyApp> {
       tokenManager: tokenManager,
     )..add(CheckAuthStatus());
 
+    _unauthorizedSubscription = _apiClient.onUnauthorized.listen((_) {
+      _authBloc.add(LogoutRequested());
+    });
+
     _maquinaBloc = MaquinaBloc(maquinaRepository: maquinaRepository);
     _asignacionBloc = AsignacionBloc(asignacionRepository: asignacionRepository);
     _incidenciaBloc = IncidenciasBloc(incidenciaRepository: incidenciaRepository);
@@ -67,6 +74,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
+    _unauthorizedSubscription.cancel();
+    _apiClient.dispose();
     _authBloc.close();
     _maquinaBloc.close();
     _asignacionBloc.close();
