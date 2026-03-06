@@ -5,8 +5,8 @@ import 'package:agroapp_mobile/presentation/blocs/maquina/maquina_bloc.dart';
 import 'package:agroapp_mobile/data/models/maquina_model.dart';
 import 'package:agroapp_mobile/data/models/asignacion_model.dart';
 import 'package:agroapp_mobile/data/models/incidencia_model.dart';
-import 'package:agroapp_mobile/data/repositories/asignacion_repository.dart';
-import 'package:agroapp_mobile/data/repositories/incidencia_repository.dart';
+import 'package:agroapp_mobile/data/services/asignacion_service.dart';
+import 'package:agroapp_mobile/data/services/incidencia_service.dart';
 
 class MaquinaDetailScreen extends StatefulWidget {
   final int maquinaId;

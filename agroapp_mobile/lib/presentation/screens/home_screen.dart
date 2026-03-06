@@ -8,7 +8,6 @@ import 'package:agroapp_mobile/config/theme/app_colors.dart';
 import 'package:agroapp_mobile/presentation/blocs/maquina/maquina_bloc.dart';
 import 'package:agroapp_mobile/presentation/blocs/asignacion/asignacion_bloc.dart';
 import 'package:agroapp_mobile/presentation/blocs/auth/auth_bloc.dart';
-import 'package:agroapp_mobile/data/models/asignacion_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

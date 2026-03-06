@@ -1,4 +1,4 @@
-import 'package:agroapp_mobile/data/repositories/incidencia_repository.dart';
+import 'package:agroapp_mobile/data/services/incidencia_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

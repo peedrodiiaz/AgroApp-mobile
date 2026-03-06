@@ -1,5 +1,5 @@
 import 'package:agroapp_mobile/data/models/asignacion_model.dart';
-import 'package:agroapp_mobile/data/repositories/asignacion_repository.dart';
+import 'package:agroapp_mobile/data/services/asignacion_service.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 

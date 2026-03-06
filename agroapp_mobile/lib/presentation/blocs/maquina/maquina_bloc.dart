@@ -1,5 +1,5 @@
 import 'package:agroapp_mobile/data/models/maquina_model.dart';
-import 'package:agroapp_mobile/data/repositories/maquina_repository.dart';
+import 'package:agroapp_mobile/data/services/maquina_service.dart';
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 

@@ -1,6 +1,6 @@
 import 'package:agroapp_mobile/core/utils/token_manager.dart';
 import 'package:agroapp_mobile/data/models/auth_response.dart';
-import 'package:agroapp_mobile/data/repositories/auth_repository.dart';
+import 'package:agroapp_mobile/data/services/auth_service.dart';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
