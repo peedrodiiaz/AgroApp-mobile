@@ -72,7 +72,7 @@ class AsignacionRepository {
         'fechaFin': fechaFin,
         'descripcion': descripcion,
         'maquinaId': maquinaId,
-        'trabajadorId': 0, // el backend lo saca del token
+        'trabajadorId': 0,
       },
     );
 

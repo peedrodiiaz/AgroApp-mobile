@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -42,12 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // Barra transparente para el nuevo diseño
+      statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
     ));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA), // Un fondo gris muy sutil para resaltar tarjetas blancas
+      backgroundColor: const Color(0xFFF5F7FA),
       body: RefreshIndicator(
         onRefresh: () async => _cargarDatos(),
         color: AppColors.primary,
@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 10),
               _buildSectionTitle('Panel de Control'),
               _buildGridActions(),
-              const SizedBox(height: 100), // Espacio para que el FAB no tape el contenido
+              const SizedBox(height: 100),
             ],
           ),
         ),
@@ -79,12 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 1. CABECERA CURVA Y ESTADÍSTICAS FLOTANTES ---
   Widget _buildCurvedHeaderAndStats(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        // Fondo verde curvo
         Container(
           height: 220,
           width: double.infinity,
@@ -127,9 +125,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
-        // Tarjeta de estadísticas flotante
         Positioned(
-          top: 130, // La empujamos hacia abajo para que monte sobre el borde
+          top: 130,
           left: 20,
           right: 20,
           child: BlocBuilder<AsignacionBloc, AsignacionState>(
@@ -174,7 +171,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 2. TÍTULOS DE SECCIÓN ---
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 40.0, bottom: 16.0),
@@ -185,7 +181,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 3. CARRUSEL HORIZONTAL DE RESERVAS ---
   Widget _buildReservasCarousel() {
     return BlocBuilder<AsignacionBloc, AsignacionState>(
       builder: (context, state) {
@@ -219,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => context.push('/asignacion/${reserva.id}', extra: reserva),
                   child: Container(
                     width: 280,
-                    margin: const EdgeInsets.only(right: 16, bottom: 10), // Bottom margin para la sombra
+                    margin: const EdgeInsets.only(right: 16, bottom: 10),
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -267,7 +262,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 4. PANEL DE CONTROL (GRID) ---
   Widget _buildGridActions() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -293,7 +287,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- 5. BOTTOM NAVIGATION BAR MODERNA ---
   Widget _buildModernBottomNav() {
     return BottomAppBar(
       shape: const CircularNotchedRectangle(),
@@ -309,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _NavBarIcon(icon: Icons.agriculture_rounded, isSelected: _selectedNav == 1, onTap: () {
               context.push('/maquinas').then((_) => setState(() => _selectedNav = 0));
             }),
-            const SizedBox(width: 48), // Hueco para el FloatingActionButton
+            const SizedBox(width: 48),
             _NavBarIcon(icon: Icons.history, isSelected: _selectedNav == 2, onTap: () {
               context.push('/historial').then((_) => setState(() => _selectedNav = 0));
             }),
@@ -323,7 +316,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Widgets Auxiliares privados
 class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String title;

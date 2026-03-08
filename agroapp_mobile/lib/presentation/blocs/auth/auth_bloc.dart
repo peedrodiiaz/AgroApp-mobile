@@ -21,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<LoginRequested>(_onLoginRequested);
     on<LogoutRequested>(_onLogoutRequested);
     on<CheckAuthStatus>(_onCheckAuthStatus);
+    on<RefreshUser>(_onRefreshUser);
   }
   Future<void> _onLoginRequested(
     LoginRequested event,
@@ -86,8 +87,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
+  Future<void> _onRefreshUser(
+    RefreshUser event,
+    Emitter<AuthState> emit,
+  ) async {
+    if (state is AuthAuthenticated) {
+      final current = state as AuthAuthenticated;
+      final user = await _authRepository.getMe();
+      emit(AuthAuthenticated(
+        AuthResponse(
+          token: current.authResponse.token,
+          refreshToken: current.authResponse.refreshToken,
+          user: user,
+        ),
+      ));
+    }
+  }
 
 }
-
-
-

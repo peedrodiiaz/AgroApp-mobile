@@ -7,6 +7,8 @@ class Incidencia {
   final String? fechaApertura;
   final int? maquinaId;
   final String? maquinaNombre;
+  final double? latitud;
+  final double? longitud;
 
   Incidencia({
     required this.id,
@@ -17,12 +19,13 @@ class Incidencia {
     this.fechaApertura,
     this.maquinaId,
     this.maquinaNombre,
+    this.latitud,
+    this.longitud,
   });
 
   static String? _parseFecha(dynamic raw) {
     if (raw == null) return null;
     if (raw is String) return raw;
-    // LocalDateTime serializado como array [y,m,d,h,min,s,nano]
     if (raw is List && raw.length >= 3) {
       final y = raw[0].toString().padLeft(4, '0');
       final m = raw[1].toString().padLeft(2, '0');
@@ -43,6 +46,8 @@ class Incidencia {
       fechaApertura: _parseFecha(json['fechaApertura']),
       maquinaId: (maquinaMap?['id'] as num?)?.toInt(),
       maquinaNombre: maquinaMap?['nombre'] as String?,
+      latitud: (json['latitud'] as num?)?.toDouble(),
+      longitud: (json['longitud'] as num?)?.toDouble(),
     );
   }
 }

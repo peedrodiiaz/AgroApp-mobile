@@ -21,6 +21,8 @@ class _RegistrarIncidenciaScreenState
   String _prioridad = 'MEDIA';
   final String _estadoIncidencia = 'ABIERTA';
   int? _maquinaIdSeleccionada;
+  final _latitudController = TextEditingController();
+  final _longitudController = TextEditingController();
 
   @override
   void initState() {
@@ -32,6 +34,8 @@ class _RegistrarIncidenciaScreenState
   void dispose() {
     _tituloController.dispose();
     _descripcionController.dispose();
+    _latitudController.dispose();
+    _longitudController.dispose();
     super.dispose();
   }
 
@@ -114,10 +118,11 @@ class _RegistrarIncidenciaScreenState
                               color: Color(0xFF2E7D32),
                             );
                           } else if (state is MaquinaLoaded) {
+                            final sorted = [...state.maquinas]..sort((a, b) => a.nombre.compareTo(b.nombre));
                             return DropdownButtonFormField<int>(
                               initialValue: _maquinaIdSeleccionada,
                               decoration: _inputDecoration('Selecciona una máquina'),
-                              items: state.maquinas.map((m) {
+                              items: sorted.map((m) {
                                 return DropdownMenuItem<int>(
                                   value: m.id,
                                   child: Text(m.nombre),
@@ -189,6 +194,68 @@ class _RegistrarIncidenciaScreenState
                   ),
                 ),
 
+                const SizedBox(height: 16),
+
+                _buildCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLabel('Ubicación de la incidencia (opcional)'),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Introduce las coordenadas GPS del lugar de la incidencia',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel('Latitud'),
+                                const SizedBox(height: 6),
+                                _buildTextField(
+                                  controller: _latitudController,
+                                  hint: 'Ej: 37.3891',
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) return null;
+                                    final d = double.tryParse(v.replaceAll(',', '.'));
+                                    if (d == null || d < -90 || d > 90) return 'Valor inválido';
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildLabel('Longitud'),
+                                const SizedBox(height: 6),
+                                _buildTextField(
+                                  controller: _longitudController,
+                                  hint: 'Ej: -5.9845',
+                                  keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
+                                  validator: (v) {
+                                    if (v == null || v.isEmpty) return null;
+                                    final d = double.tryParse(v.replaceAll(',', '.'));
+                                    if (d == null || d < -180 || d > 180) return 'Valor inválido';
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 32),
 
                 BlocBuilder<IncidenciasBloc, IncidenciasState>(
@@ -252,14 +319,18 @@ class _RegistrarIncidenciaScreenState
 
   void _submit() {
     if (_formKey.currentState!.validate()) {
+      final latStr = _latitudController.text.trim().replaceAll(',', '.');
+      final lonStr = _longitudController.text.trim().replaceAll(',', '.');
       context.read<IncidenciasBloc>().add(
             IncidenciaCreate(
               titulo: _tituloController.text.trim(),
               descripcion: _descripcionController.text.trim(),
               estadoIncidencia: _estadoIncidencia,
               maquinaId: _maquinaIdSeleccionada!,
-              trabajadorId: 0, // lo saca el backend del token
+              trabajadorId: 0,
               prioridad: _prioridad,
+              latitud: latStr.isNotEmpty ? double.tryParse(latStr) : null,
+              longitud: lonStr.isNotEmpty ? double.tryParse(lonStr) : null,
             ),
           );
     }
@@ -299,11 +370,13 @@ class _RegistrarIncidenciaScreenState
     required TextEditingController controller,
     required String hint,
     int maxLines = 1,
+    TextInputType? keyboardType,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
+      keyboardType: keyboardType,
       validator: validator,
       decoration: _inputDecoration(hint),
     );

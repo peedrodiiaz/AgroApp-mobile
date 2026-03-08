@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:agroapp_mobile/config/theme/app_colors.dart'; //
-import 'package:agroapp_mobile/presentation/blocs/auth/auth_bloc.dart'; //
+import 'package:agroapp_mobile/config/theme/app_colors.dart';
+import 'package:agroapp_mobile/presentation/blocs/auth/auth_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -43,7 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // --- PARTE SUPERIOR: ONDA Y LOGO ---
               Stack(
                 alignment: Alignment.center,
                 children: [
@@ -62,7 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Column(
                       children: [
                         const SizedBox(height: 20),
-                        // Logo animado que parece flotar
                         TweenAnimationBuilder(
                           duration: const Duration(seconds: 1),
                           tween: Tween<double>(begin: 0, end: 1),
@@ -76,38 +73,19 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: Container(
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                )
-                              ],
+                              borderRadius: BorderRadius.circular(16),
                             ),
-                            child: Center(
-                              child: SvgPicture.asset(
-                                'assets/images/LogoAPP.svg', //
-                                height: 70,
-                                color: AppColors.secondary,
-                              
-                              ),
+                            child: Image.asset(
+                              'assets/images/LogoAPP.jpg',
+                              height: 100,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
                         const SizedBox(height: 15),
-                        const Text(
-                          'AGROAPP',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 4,
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -210,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildElegantButton(BuildContext context) {
-    return BlocBuilder<AuthBloc, AuthState>( //
+    return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
         final bool isLoading = state is AuthLoading;
 

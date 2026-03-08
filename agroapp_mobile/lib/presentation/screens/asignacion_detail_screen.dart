@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class AsignacionDetailScreen extends StatelessWidget {
   final dynamic asignacion;
 
@@ -23,7 +22,6 @@ class AsignacionDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -84,7 +82,6 @@ class AsignacionDetailScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Info detallada
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),

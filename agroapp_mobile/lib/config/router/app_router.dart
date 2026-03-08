@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:agroapp_mobile/presentation/screens/asignacion_detail_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/home_screen.dart';
+import 'package:agroapp_mobile/presentation/screens/incidencia_detail_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/maquinas_list_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/profile_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/login_screen.dart';
@@ -8,6 +9,7 @@ import 'package:agroapp_mobile/presentation/screens/maquina_detail_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/nueva_reserva_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/registrar_incidencia_screen.dart';
 import 'package:agroapp_mobile/presentation/screens/historial_screen.dart';
+import 'package:agroapp_mobile/data/models/incidencia_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:agroapp_mobile/presentation/blocs/auth/auth_bloc.dart';
@@ -79,6 +81,14 @@ class AppRouter {
           },
         ),
         GoRoute(
+          path: '/incidencia/:id',
+          name: 'incidenciaDetail',
+          builder: (context, state) {
+            final incidencia = state.extra as Incidencia;
+            return IncidenciaDetailScreen(incidencia: incidencia);
+          },
+        ),
+        GoRoute(
           path: '/registrar-incidencia',
           name: 'registrarIncidencia',
           builder: (context, state) => const RegistrarIncidenciaScreen(),
@@ -111,7 +121,6 @@ class AppRouter {
   }
 }
 
-// Mtodo para escuchar cambios en el AuthBloc y refrescar la navegación
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();

@@ -18,7 +18,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
   @override
   void initState() {
     super.initState();
-    // Cargamos las asignaciones del trabajador al iniciar
     context.read<AsignacionBloc>().add(AsignacionLoadByTrabajador());
   }
 
@@ -76,7 +75,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
         final a = asignaciones[index];
         
         return GestureDetector(
-          // Al pulsar la tarjeta, navegamos al detalle
           onTap: () => context.push('/asignacion/${a.id}', extra: a),
           child: Container(
             margin: const EdgeInsets.only(bottom: 16),
@@ -94,7 +92,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
             child: IntrinsicHeight(
               child: Row(
                 children: [
-                  // Lado izquierdo: Fecha estilizada
                   Container(
                     width: 75,
                     decoration: BoxDecoration(
@@ -118,7 +115,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
                       ],
                     ),
                   ),
-                  // Lado derecho: Información
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(20),
@@ -132,7 +128,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
                                 a.maquina.nombre,
                                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
                               ),
-                              // Los 3 puntos ahora tienen acción: abrir detalle
                               Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.border.withOpacity(0.8)),
                             ],
                           ),
@@ -144,7 +139,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 16),
-                          // Badges informativos (Sin IDs)
                           Row(
                             children: [
                               _infoBadge(Icons.calendar_month_outlined, 'Fin: ${DateFormat('dd/MM').format(DateTime.parse(a.fechaFin!))}'),

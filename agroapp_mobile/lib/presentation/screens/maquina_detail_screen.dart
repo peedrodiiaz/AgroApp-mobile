@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:agroapp_mobile/core/network/api_client.dart';
 import 'package:agroapp_mobile/presentation/blocs/maquina/maquina_bloc.dart';
 import 'package:agroapp_mobile/data/models/maquina_model.dart';
 import 'package:agroapp_mobile/data/models/asignacion_model.dart';
@@ -22,7 +23,6 @@ class _MaquinaDetailScreenState extends State<MaquinaDetailScreen>
   late TabController _tabController;
   late Future<List<Asignacion>> _reservasFuture;
   late Future<List<Incidencia>> _incidenciasFuture;
-
   @override
   void initState() {
     super.initState();
@@ -40,6 +40,11 @@ class _MaquinaDetailScreenState extends State<MaquinaDetailScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  String? _imagenUrl(String? imagen) {
+    if (imagen == null || imagen.isEmpty) return null;
+    return '${ApiClient.baseUrl}/api/ficheros/$imagen';
   }
 
   Color _estadoColor(String estado) {
@@ -187,13 +192,30 @@ class _MaquinaDetailScreenState extends State<MaquinaDetailScreen>
     );
   }
 
-  // ─── TAB INFO ─────────────────────────────────────────────────────────────
-
   Widget _buildInfoTab(Maquina m) {
+    final url = _imagenUrl(m.imagen);
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          _card(
+            title: 'Imagen',
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: url != null
+                    ? Image.network(
+                        url,
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => _imagePlaceholder(),
+                      )
+                    : _imagePlaceholder(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           _card(
             title: 'Especificaciones',
             children: [
@@ -237,7 +259,21 @@ class _MaquinaDetailScreenState extends State<MaquinaDetailScreen>
     );
   }
 
-  // ─── TAB RESERVAS ─────────────────────────────────────────────────────────
+  Widget _imagePlaceholder() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      color: Colors.grey[100],
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.image_outlined, size: 48, color: Colors.grey),
+          SizedBox(height: 8),
+          Text('Sin imagen', style: TextStyle(color: Colors.grey)),
+        ],
+      ),
+    );
+  }
 
   Widget _buildReservasTab() {
     return FutureBuilder<List<Asignacion>>(
@@ -341,8 +377,6 @@ class _MaquinaDetailScreenState extends State<MaquinaDetailScreen>
     );
   }
 
-  // ─── TAB INCIDENCIAS ──────────────────────────────────────────────────────
-
   Widget _buildIncidenciasTab() {
     return FutureBuilder<List<Incidencia>>(
       future: _incidenciasFuture,
@@ -386,7 +420,9 @@ class _MaquinaDetailScreenState extends State<MaquinaDetailScreen>
     final estadoAbierta = inc.estadoIncidencia == 'ABIERTA' ||
         inc.estadoIncidencia == 'EN_PROGRESO';
 
-    return Container(
+    return GestureDetector(
+      onTap: () => context.push('/incidencia/${inc.id}', extra: inc),
+      child: Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -462,10 +498,9 @@ class _MaquinaDetailScreenState extends State<MaquinaDetailScreen>
           ),
         ],
       ),
-    );
-  }
-
-  // ─── HELPERS ──────────────────────────────────────────────────────────────
+    ),
+  );
+}
 
   Widget _card({required String title, required List<Widget> children}) {
     return Container(

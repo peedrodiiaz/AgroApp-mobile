@@ -1,7 +1,5 @@
 part of 'incidencias_bloc.dart';
 
-
-
 @immutable
 sealed class IncidenciasState {}
 

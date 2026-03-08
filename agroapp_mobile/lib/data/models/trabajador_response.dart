@@ -6,6 +6,7 @@ class Trabajador {
   final String email;
   final String telefono;
   final String rol;
+  final String? fotoPerfil;
 
   Trabajador({
     required this.id,
@@ -15,9 +16,9 @@ class Trabajador {
     required this.email,
     required this.telefono,
     required this.rol,
+    this.fotoPerfil,
   });
 
-  //Convierte JSON a objeto Trabajador
   factory Trabajador.fromJson(Map<String, dynamic> json) {
     return Trabajador(
       id: json['id'] ?? 0,
@@ -27,9 +28,9 @@ class Trabajador {
       email: json['email'] ?? '',
       telefono: json['telefono'] ?? '',
       rol: json['rol'] ?? 'USER',
+      fotoPerfil: json['fotoPerfil'] as String?,
     );
   }
 
-  // Nombre completo
   String get nombreCompleto => '$nombre $apellido';
 }

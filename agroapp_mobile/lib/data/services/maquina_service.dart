@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:agroapp_mobile/core/network/api_client.dart';
 import 'package:agroapp_mobile/data/models/maquina_model.dart';
@@ -44,6 +45,22 @@ class MaquinaRepository {
       }
     } catch (e) {
       throw Exception('Error al obtener máquina: $e');
+    }
+  }
+
+  Future<Maquina> uploadImagen(int id, File imageFile) async {
+    try {
+      final response = await apiClient.putMultipart(
+        '/api/maquinas/$id/imagen',
+        file: imageFile,
+      );
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return Maquina.fromJson(jsonDecode(response.body));
+      } else {
+        throw Exception('Error al subir imagen: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error al subir imagen: $e');
     }
   }
 }

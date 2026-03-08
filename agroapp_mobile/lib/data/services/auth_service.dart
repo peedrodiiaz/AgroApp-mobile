@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import '../../core/network/api_client.dart';
 import '../models/auth_response.dart';
 import '../models/trabajador_response.dart';
@@ -21,7 +22,6 @@ class AuthRepository {
         },
       );
 
-
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         return AuthResponse.fromJson(jsonData);
@@ -43,5 +43,16 @@ class AuthRepository {
       }
     } catch (_) {}
     return null;
+  }
+
+  Future<Trabajador> uploadFotoMe(File imageFile) async {
+    final response = await _apiClient.putMultipart(
+      '/api/trabajadores/me/foto',
+      file: imageFile,
+    );
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return Trabajador.fromJson(jsonDecode(response.body));
+    }
+    throw Exception('Error al subir foto: ${response.statusCode}');
   }
 }

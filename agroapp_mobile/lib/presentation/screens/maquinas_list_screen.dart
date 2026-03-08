@@ -92,7 +92,6 @@ class _MaquinasListScreenState extends State<MaquinasListScreen> {
 
     return Column(
       children: [
-        // Resumen
         Container(
           color: const Color(0xFF2E7D32),
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -111,7 +110,6 @@ class _MaquinasListScreenState extends State<MaquinasListScreen> {
             ],
           ),
         ),
-        // Filtros
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
           child: SingleChildScrollView(
@@ -123,7 +121,6 @@ class _MaquinasListScreenState extends State<MaquinasListScreen> {
             ),
           ),
         ),
-        // Lista
         Expanded(
           child: filtradas.isEmpty
               ? const Center(

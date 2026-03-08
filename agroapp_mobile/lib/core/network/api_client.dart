@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../utils/token_manager.dart';
 
@@ -27,7 +28,6 @@ class ApiClient {
     };
   }
 
-  // GET
   Future<http.Response> get(String endpoint) async {
     final url = Uri.parse('$baseUrl$endpoint');
     final token = await _tokenManager.getToken();
@@ -36,7 +36,6 @@ class ApiClient {
     return response;
   }
 
-  // POST
   Future<http.Response> post(
     String endpoint, {
     Map<String, dynamic>? body,
@@ -52,7 +51,6 @@ class ApiClient {
     return response;
   }
 
-  // PUT
   Future<http.Response> put(
     String endpoint, {
     Map<String, dynamic>? body,
@@ -68,11 +66,28 @@ class ApiClient {
     return response;
   }
 
-  // DELETE
   Future<http.Response> delete(String endpoint) async {
     final url = Uri.parse('$baseUrl$endpoint');
     final token = await _tokenManager.getToken();
     final response = await http.delete(url, headers: _headers(token: token));
+    _checkUnauthorized(response);
+    return response;
+  }
+
+  Future<http.Response> putMultipart(
+    String endpoint, {
+    required File file,
+    String fieldName = 'file',
+  }) async {
+    final url = Uri.parse('$baseUrl$endpoint');
+    final token = await _tokenManager.getToken();
+    final request = http.MultipartRequest('PUT', url);
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
+    }
+    request.files.add(await http.MultipartFile.fromPath(fieldName, file.path));
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
     _checkUnauthorized(response);
     return response;
   }

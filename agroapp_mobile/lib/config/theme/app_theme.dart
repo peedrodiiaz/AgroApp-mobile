@@ -46,7 +46,6 @@ class AppTheme {
         fillColor: Colors.white,
       ),
       
-      // Textos
       textTheme: const TextTheme(
         displayLarge: TextStyle(
           fontSize: 32,

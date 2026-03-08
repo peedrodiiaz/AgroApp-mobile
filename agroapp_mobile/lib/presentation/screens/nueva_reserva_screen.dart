@@ -102,7 +102,6 @@ class _NuevaReservaScreenState extends State<NuevaReservaScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Selección de máquina
                 _buildCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,10 +115,11 @@ class _NuevaReservaScreenState extends State<NuevaReservaScreen> {
                               color: Color(0xFF2E7D32),
                             );
                           } else if (state is MaquinaLoaded) {
+                            final sorted = [...state.maquinas]..sort((a, b) => a.nombre.compareTo(b.nombre));
                             return DropdownButtonFormField<int>(
                               initialValue: _maquinaIdSeleccionada,
                               decoration: _inputDecoration('Selecciona una máquina'),
-                              items: state.maquinas.map((m) {
+                              items: sorted.map((m) {
                                 return DropdownMenuItem<int>(
                                   value: m.id,
                                   child: Text(m.nombre),
@@ -140,7 +140,6 @@ class _NuevaReservaScreenState extends State<NuevaReservaScreen> {
 
                 const SizedBox(height: 16),
 
-                // Fechas
                 _buildCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -186,7 +185,6 @@ class _NuevaReservaScreenState extends State<NuevaReservaScreen> {
 
                 const SizedBox(height: 16),
 
-                // Descripción
                 _buildCard(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

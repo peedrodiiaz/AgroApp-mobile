@@ -41,17 +41,23 @@ class IncidenciaRepository {
     required int maquinaId,
     required int trabajadorId,
     required String prioridad,
+    double? latitud,
+    double? longitud,
   }) async {
+    final body = <String, dynamic>{
+      'titulo': titulo,
+      'descripcion': descripcion,
+      'estadoIncidencia': estadoIncidencia,
+      'maquinaId': maquinaId,
+      'trabajadorId': trabajadorId,
+      'prioridad': prioridad,
+    };
+    if (latitud != null) body['latitud'] = latitud;
+    if (longitud != null) body['longitud'] = longitud;
+
     final response = await apiClient.post(
       '/api/incidencias',
-      body: {
-        'titulo': titulo,
-        'descripcion': descripcion,
-        'estadoIncidencia': estadoIncidencia,
-        'maquinaId': maquinaId,
-        'trabajadorId': trabajadorId,
-        'prioridad': prioridad,
-      },
+      body: body,
     );
 
     if (response.statusCode != 200 && response.statusCode != 201) {

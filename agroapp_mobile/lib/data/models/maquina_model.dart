@@ -5,6 +5,7 @@ class Maquina {
   final String? numSerie;
   final String? fechaCompra;
   final String estado;
+  final String? imagen;
 
   Maquina({
     required this.id,
@@ -13,6 +14,7 @@ class Maquina {
     this.numSerie,
     this.fechaCompra,
     required this.estado,
+    this.imagen,
   });
 
   factory Maquina.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class Maquina {
       numSerie: json['numSerie'] as String?,
       fechaCompra: fechaCompraStr,
       estado: (json['estado'] as String?) ?? '',
+      imagen: json['imagen'] as String?,
     );
   }
 
@@ -45,6 +48,7 @@ class Maquina {
       'numSerie': numSerie,
       'fechaCompra': fechaCompra,
       'estado': estado,
+      'imagen': imagen,
     };
   }
 }

@@ -1,17 +1,56 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:agroapp_mobile/core/network/api_client.dart';
 import 'package:agroapp_mobile/data/models/trabajador_response.dart';
+import 'package:agroapp_mobile/data/services/auth_service.dart';
 import 'package:agroapp_mobile/presentation/blocs/auth/auth_bloc.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  bool _uploadingFoto = false;
+  Trabajador? _updatedUser;
+
+  Future<void> _pickAndUploadFoto() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (picked == null) return;
+    setState(() => _uploadingFoto = true);
+    try {
+      final repo = context.read<AuthRepository>();
+      final updated = await repo.uploadFotoMe(File(picked.path));
+      if (mounted) {
+        setState(() {
+          _updatedUser = updated;
+          _uploadingFoto = false;
+        });
+        context.read<AuthBloc>().add(RefreshUser());
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al subir foto: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingFoto = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, state) {
-        final user =
+        final blocUser =
             state is AuthAuthenticated ? state.authResponse.user : null;
+        final user = _updatedUser ?? blocUser;
 
         return Scaffold(
           backgroundColor: const Color(0xFFF5F7FA),
@@ -68,6 +107,9 @@ class ProfileScreen extends StatelessWidget {
         ? '${user.nombre.isNotEmpty ? user.nombre[0] : ''}${user.apellido.isNotEmpty ? user.apellido[0] : ''}'
             .toUpperCase()
         : '?';
+    final fotoUrl = (user?.fotoPerfil != null && user!.fotoPerfil!.isNotEmpty)
+        ? '${ApiClient.baseUrl}/api/ficheros/${user.fotoPerfil}'
+        : null;
 
     return SliverAppBar(
       expandedHeight: 220,
@@ -89,24 +131,44 @@ class ProfileScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 100),
-              // Avatar con iniciales
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2.5),
-                ),
-                child: Center(
-                  child: Text(
-                    initials,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
+              GestureDetector(
+                onTap: _uploadingFoto ? null : _pickAndUploadFoto,
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 42,
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundImage: fotoUrl != null ? NetworkImage(fotoUrl) : null,
+                      child: fotoUrl == null
+                          ? Text(
+                              initials,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : null,
                     ),
-                  ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 26,
+                        height: 26,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: _uploadingFoto
+                            ? const Padding(
+                                padding: EdgeInsets.all(4),
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2E7D32)),
+                              )
+                            : const Icon(Icons.camera_alt_rounded, size: 16, color: Color(0xFF2E7D32)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 12),

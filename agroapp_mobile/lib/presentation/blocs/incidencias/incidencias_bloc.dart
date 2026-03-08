@@ -2,7 +2,6 @@ import 'package:agroapp_mobile/data/services/incidencia_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 part 'incidencias_event.dart';
 part 'incidencias_state.dart';
 
@@ -26,6 +25,8 @@ class IncidenciasBloc extends Bloc<IncidenciasEvent, IncidenciasState> {
         maquinaId: event.maquinaId,
         trabajadorId: event.trabajadorId,
         prioridad: event.prioridad,
+        latitud: event.latitud,
+        longitud: event.longitud,
       );
       emit(IncidenciaCreated());
     } catch (e) {

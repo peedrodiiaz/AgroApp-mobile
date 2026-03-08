@@ -10,6 +10,8 @@ class IncidenciaCreate extends IncidenciasEvent {
   final int maquinaId;
   final int trabajadorId;
   final String prioridad;
+  final double? latitud;
+  final double? longitud;
 
   IncidenciaCreate({
     required this.titulo,
@@ -18,5 +20,7 @@ class IncidenciaCreate extends IncidenciasEvent {
     required this.maquinaId,
     required this.trabajadorId,
     required this.prioridad,
+    this.latitud,
+    this.longitud,
   });
 }
